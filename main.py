@@ -235,9 +235,17 @@ def ema_yesterday(stockTicker):
     sma26 = sum(closingPrices26) / len(closingPrices26)
     weight26 = 2 / (len(closingPrices26) + 1)
     ema26 = float((pricenow - sma26) * weight26 + sma26)
-    return float(ema12 - ema26)    
+    return float(ema12 - ema26) 
 
+def ema_top_range(stockTicker):
+    current = r.get_stock_quote_by_symbol(stockTicker)
+    pricenow = float(current['ask_price'])
+    return float(pricenow/20 * 1.5) 
 
+def ema_bottom_range(stockTicker):       
+    current = r.get_stock_quote_by_symbol(stockTicker)
+    pricenow = float(current['ask_price'])
+    return float(pricenow/20 * -1.5) 
 
 def sell_holdings(symbol, holdings_data):
     """ Place an order to sell all holdings of a stock.
@@ -305,9 +313,12 @@ def scan_stocks():
         '''cross = golden_cross(symbol, n1=50, n2=200, days=30, direction="below")'''
         emat = ema_today(symbol)
         emay = ema_yesterday(symbol)
-        if(emat < emay and emat < 0):
-            sell_holdings(symbol, holdings_data)
-            sells.append(symbol)
+        bot = ema_bottom_range(symbol)
+        top = ema_top_range(symbol)
+        if (emat < emay):
+            if (emat in range(bot,top)): 
+                sell_holdings(symbol, holdings_data)
+                sells.append(symbol)
     profile_data = r.build_user_profile()
     print("\n----- Scanning watchlist for stocks to buy -----\n")
     for symbol in watchlist_symbols:
@@ -315,8 +326,9 @@ def scan_stocks():
             '''cross = golden_cross(symbol, n1=50, n2=200, days=30, direction="above")'''
             emat = ema_today(symbol)
             emay = ema_yesterday(symbol)
-            if(emat > emay and emat > 0):
-                potential_buys.append(symbol)
+            if(emat > emay):
+                if (emat in range(bot,top)):
+                    potential_buys.append(symbol)
     if(len(potential_buys) > 0):
         buy_holdings(potential_buys, profile_data, holdings_data)
     if(len(sells) > 0):
