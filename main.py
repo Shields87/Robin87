@@ -10,7 +10,7 @@ from datetime import datetime
 from datetime import timedelta
 
 #Log in to Robinhood
-login = r.login('kyle.shields87@gmail.com','Warcraft3*')
+login = r.login('???','???')
 
 #Safe divide by zero division function
 def safe_division(n, d):
